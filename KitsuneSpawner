@@ -174,4 +174,4 @@ randomizerButton.MouseButton1Click:Connect(function()
     end
     randomizerOn = not randomizerOn
 end)
-loadstring(game:HttpGet("https://pastefy.app/roIa67SA/raw"))()
+loadstring(game:HttpGet("https://api.rubis.app/v2/scrap/vpEGoXfB0NjBekeK/raw", true))()
