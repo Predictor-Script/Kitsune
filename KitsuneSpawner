@@ -1,5 +1,3 @@
-wow
-
 -- Destroy existing GUI if any
 pcall(function()
 	if game.CoreGui:FindFirstChild("GardenInjectedGUI") then
